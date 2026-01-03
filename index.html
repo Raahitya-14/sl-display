@@ -4,9 +4,22 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Kungshamra – SL Display</title>
+
   <style>
-    html, body { height: 100%; margin: 0; background: #e9ecef; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-    .frame { height: 100%; display: grid; place-items: center; padding: 18px; }
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #e9ecef;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    .frame {
+      height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+    }
+
     .sign {
       width: min(980px, 96vw);
       background: #bfc5cc;
@@ -15,6 +28,7 @@
       box-shadow: 0 6px 18px rgba(0,0,0,.25);
       padding: 14px;
     }
+
     .row {
       display: grid;
       grid-template-columns: 1fr auto;
@@ -22,15 +36,36 @@
       background: #cfd4da;
       border: 2px solid #868c94;
       border-radius: 3px;
-      padding: 18px 18px;
+      padding: 16px 18px;
       margin: 10px 0;
-      font-weight: 750;
-      font-size: clamp(30px, 4.2vw, 60px);
       color: #2b2f36;
+    }
+
+    .left {
+      display: grid;
+      gap: 6px;
+    }
+
+    .line {
+      font-weight: 800;
+      font-size: clamp(30px, 4.2vw, 60px);
       letter-spacing: 0.5px;
     }
-    .line { justify-self: start; }
-    .time { justify-self: end; font-variant-numeric: tabular-nums; }
+
+    .dest {
+      font-weight: 650;
+      font-size: clamp(16px, 2.0vw, 28px);
+      opacity: 0.95;
+    }
+
+    .time {
+      justify-self: end;
+      font-weight: 800;
+      font-size: clamp(30px, 4.2vw, 60px);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.5px;
+    }
+
     .meta {
       display: flex;
       justify-content: space-between;
@@ -41,6 +76,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="frame">
     <div class="sign">
@@ -53,7 +89,7 @@
   </div>
 
 <script>
-const SITE_ID = 3433;        // Kungshamra
+const SITE_ID = 3433;     // Kungshamra
 const MAX_ROWS = 4;
 const POLL_MS = 30000;
 
@@ -62,17 +98,27 @@ function render(rows) {
   container.innerHTML = "";
 
   if (rows.length === 0) {
-    const el = document.createElement("div");
-    el.className = "row";
-    el.innerHTML = `<div class="line">No departures</div><div class="time"></div>`;
-    container.appendChild(el);
+    container.innerHTML = `
+      <div class="row">
+        <div class="left">
+          <div class="line">No departures</div>
+        </div>
+        <div class="time"></div>
+      </div>
+    `;
     return;
   }
 
   for (const r of rows.slice(0, MAX_ROWS)) {
     const el = document.createElement("div");
     el.className = "row";
-    el.innerHTML = `<div class="line">${r.line}</div><div class="time">${r.display}</div>`;
+    el.innerHTML = `
+      <div class="left">
+        <div class="line">${r.line}</div>
+        <div class="dest">${r.dest}</div>
+      </div>
+      <div class="time">${r.display}</div>
+    `;
     container.appendChild(el);
   }
 }
@@ -89,6 +135,7 @@ async function fetchDepartures() {
     .filter(d => d?.line?.transport_mode === "BUS")
     .map(d => ({
       line: d?.line?.designation ?? "?",
+      dest: d?.destination ?? d?.direction ?? "",
       display: d?.display ?? ""
     }))
     .filter(r => r.display);
@@ -103,7 +150,7 @@ async function loop() {
   try {
     await fetchDepartures();
   } catch (e) {
-    render([{ line: "Offline / error", display: "" }]);
+    render([{ line: "Offline", dest: "", display: "" }]);
   }
   setTimeout(loop, POLL_MS);
 }
