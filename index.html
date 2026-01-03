@@ -3,76 +3,128 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Kungshamra – SL Display</title>
+  <title>Kungshamra – SL LED Display</title>
 
   <style>
+    :root{
+      --bg: #0b0b0c;
+      --panel: #0f0f11;
+      --border: #2a2a2e;
+      --text: #ffb000;     /* amber */
+      --text-dim: rgba(255,176,0,0.75);
+    }
+
     html, body {
       height: 100%;
       margin: 0;
-      background: #e9ecef;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #111;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     }
 
     .frame {
       height: 100%;
       display: grid;
       place-items: center;
-      padding: 18px;
-    }
-
-    .sign {
-      width: min(980px, 96vw);
-      background: #bfc5cc;
-      border: 10px solid #6b6f76;
-      border-radius: 6px;
-      box-shadow: 0 6px 18px rgba(0,0,0,.25);
       padding: 14px;
     }
 
+    /* LED sign container */
+    .sign {
+      width: min(1100px, 96vw);
+      background: var(--panel);
+      border: 10px solid #1a1a1d;
+      border-radius: 10px;
+      box-shadow: 0 10px 28px rgba(0,0,0,.45);
+      padding: 14px 16px 12px;
+    }
+
+    /* Rows look like a single LED panel line */
     .row {
       display: grid;
       grid-template-columns: 1fr auto;
       align-items: center;
-      background: #cfd4da;
-      border: 2px solid #868c94;
-      border-radius: 3px;
-      padding: 16px 18px;
-      margin: 10px 0;
-      color: #2b2f36;
+      padding: 14px 10px;
+      border-top: 1px solid rgba(255,255,255,0.06);
     }
+    .row:first-child { border-top: 0; }
 
+    /* Left side: "540 Universitetet" */
     .left {
-      display: grid;
-      gap: 6px;
+      display: flex;
+      gap: 18px;
+      align-items: baseline;
+      min-width: 0; /* enables ellipsis */
+      color: var(--text);
+      font-weight: 800;
+      font-size: clamp(22px, 3.2vw, 44px);
+      letter-spacing: 0.8px;
+      text-transform: none;
+      /* “LED glow” */
+      text-shadow:
+        0 0 6px rgba(255,176,0,0.35),
+        0 0 14px rgba(255,176,0,0.18);
     }
 
     .line {
-      font-weight: 800;
-      font-size: clamp(30px, 4.2vw, 60px);
-      letter-spacing: 0.5px;
+      flex: 0 0 auto;
+      width: 3.4ch; /* keeps line numbers aligned */
+      text-align: left;
     }
 
     .dest {
-      font-weight: 650;
-      font-size: clamp(16px, 2.0vw, 28px);
+      flex: 1 1 auto;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
       opacity: 0.95;
     }
 
+    /* Right side time: "8 min" or "22:31" */
     .time {
       justify-self: end;
-      font-weight: 800;
-      font-size: clamp(30px, 4.2vw, 60px);
+      color: var(--text);
+      font-weight: 900;
+      font-size: clamp(22px, 3.2vw, 44px);
+      letter-spacing: 0.8px;
       font-variant-numeric: tabular-nums;
-      letter-spacing: 0.5px;
+      text-shadow:
+        0 0 6px rgba(255,176,0,0.35),
+        0 0 14px rgba(255,176,0,0.18);
+      margin-left: 12px;
     }
 
+    /* Bottom small status line */
     .meta {
       display: flex;
       justify-content: space-between;
-      margin-top: 8px;
-      font-size: 14px;
-      color: #2b2f36;
-      opacity: .85;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      font-size: 13px;
+      color: var(--text-dim);
+      letter-spacing: 0.4px;
+    }
+
+    /* Subtle LED “pixel grid” effect over the sign */
+    .sign::before{
+      content:"";
+      display:block;
+      position: relative;
+    }
+    .sign {
+      position: relative;
+      overflow: hidden;
+    }
+    .sign::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background-image:
+        radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: 6px 6px;
+      opacity: 0.18;
+      pointer-events:none;
+      mix-blend-mode: overlay;
     }
   </style>
 </head>
@@ -97,11 +149,12 @@ function render(rows) {
   const container = document.getElementById("rows");
   container.innerHTML = "";
 
-  if (rows.length === 0) {
+  if (!rows || rows.length === 0) {
     container.innerHTML = `
       <div class="row">
         <div class="left">
-          <div class="line">No departures</div>
+          <div class="line">--</div>
+          <div class="dest">No departures</div>
         </div>
         <div class="time"></div>
       </div>
@@ -114,13 +167,19 @@ function render(rows) {
     el.className = "row";
     el.innerHTML = `
       <div class="left">
-        <div class="line">${r.line}</div>
-        <div class="dest">${r.dest}</div>
+        <div class="line">${escapeHtml(r.line)}</div>
+        <div class="dest">${escapeHtml(r.dest)}</div>
       </div>
-      <div class="time">${r.display}</div>
+      <div class="time">${escapeHtml(r.display)}</div>
     `;
     container.appendChild(el);
   }
+}
+
+function escapeHtml(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
 }
 
 async function fetchDepartures() {
@@ -131,6 +190,7 @@ async function fetchDepartures() {
 
   const deps = Array.isArray(data?.departures) ? data.departures : [];
 
+  // Keep buses only, then map to line + destination + display string
   const rows = deps
     .filter(d => d?.line?.transport_mode === "BUS")
     .map(d => ({
@@ -150,7 +210,7 @@ async function loop() {
   try {
     await fetchDepartures();
   } catch (e) {
-    render([{ line: "Offline", dest: "", display: "" }]);
+    render([{ line: "--", dest: "Offline / error", display: "" }]);
   }
   setTimeout(loop, POLL_MS);
 }
