@@ -21,12 +21,12 @@
     }
 
     html, body {
-      height: 100vh;
+      height: 100%;
       margin: 0;
       padding: 0;
       background: var(--bg);
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      overflow: hidden;
+      overflow: auto; /* allow scrolling if needed */
     }
 
     * { -webkit-tap-highlight-color: transparent; }
@@ -55,7 +55,7 @@
       .frame {
         padding: 20px;
       }
-      
+
       .sign {
         width: min(1200px, 90vw);
         height: auto;
@@ -68,8 +68,10 @@
     }
 
     .rows {
-      /* Reserve height so meta bar doesn't shift content */
       flex: 1 1 auto;
+      min-height: 0;                 /* critical for flex scrolling */
+      overflow-y: auto;              /* scroll rows area */
+      -webkit-overflow-scrolling: touch;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -110,7 +112,6 @@
       text-align: left;
     }
 
-    /* Metro line badge */
     .metro-badge {
       display: inline-flex;
       align-items: center;
@@ -222,10 +223,10 @@
 <script>
 const BUS_SITE_ID   = 3433; // Kungshamra
 const METRO_SITE_ID = 3432; // Bergshamra centrum
-const MAX_ROWS = 4;
+const MAX_ROWS = 5;         // increased so scrolling is useful
 const POLL_MS  = 30000;
 
-let mode = "BUS"; // "BUS" | "METRO"
+let mode = "BUS";
 let timer = null;
 
 function escapeHtml(s) {
@@ -242,7 +243,6 @@ function setMode(next) {
   document.getElementById("title").textContent =
     mode === "BUS" ? "Kungshamra (Buses)" : "Bergshamra centrum (Metro)";
 
-  // Refresh immediately without reloading the page
   tick();
 }
 
