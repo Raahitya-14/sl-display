@@ -32,11 +32,11 @@
     * { -webkit-tap-highlight-color: transparent; }
     body { user-select: none; -webkit-user-select: none; touch-action: manipulation; }
 
-    .frame { height: 100vh; display: grid; place-items: center; padding: 0; }
+    .frame { height: 100dvh; display: grid; place-items: center; padding: 0; }
 
     .sign {
       width: 100vw;
-      height: 100vh;
+      height: 100dvh;
       background: var(--panel);
       padding:
         calc(20px + env(safe-area-inset-top))
@@ -66,6 +66,20 @@
         padding: 30px 40px;
       }
     }
+    
+    @media (orientation: landscape) {
+        .sign {
+            padding:
+            calc(10px + env(safe-area-inset-top))
+            calc(12px + env(safe-area-inset-right))
+            calc(10px + env(safe-area-inset-bottom))
+            calc(12px + env(safe-area-inset-left));
+        }
+
+        .row { padding: 10px 10px; }
+        .meta { margin-top: 6px; padding-top: 6px; }
+    }
+
 
     .rows {
       flex: 1 1 auto;
