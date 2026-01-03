@@ -4,7 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Kungshamra – SL LED Display</title>
-
+  <!-- Fullscreen / PWA -->
+    <meta name="theme-color" content="#0b0b0c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="mobile-web-app-capable" content="yes">
   <style>
     :root{
       --bg: #0b0b0c;
@@ -126,6 +130,13 @@
       pointer-events:none;
       mix-blend-mode: overlay;
     }
+    body {
+        padding: env(safe-area-inset-top)
+                env(safe-area-inset-right)
+                env(safe-area-inset-bottom)
+                env(safe-area-inset-left);
+    }
+
   </style>
 </head>
 
