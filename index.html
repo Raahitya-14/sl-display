@@ -67,26 +67,6 @@
       }
     }
 
-    /* PWA fullscreen mode - force mobile layout */
-    @media (display-mode: standalone) {
-      .frame {
-        padding: 0 !important;
-      }
-      
-      .sign {
-        width: 100vw !important;
-        height: 100vh !important;
-        border: none !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        padding:
-          calc(20px + env(safe-area-inset-top))
-          calc(20px + env(safe-area-inset-right))
-          calc(20px + env(safe-area-inset-bottom))
-          calc(20px + env(safe-area-inset-left)) !important;
-      }
-    }
-
     .rows {
       /* Reserve height so meta bar doesn't shift content */
       flex: 1 1 auto;
