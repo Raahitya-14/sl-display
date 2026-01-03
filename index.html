@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kungshamra – SL Display</title>
+  <style>
+    html, body { height: 100%; margin: 0; background: #e9ecef; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    .frame { height: 100%; display: grid; place-items: center; padding: 18px; }
+    .sign {
+      width: min(980px, 96vw);
+      background: #bfc5cc;
+      border: 10px solid #6b6f76;
+      border-radius: 6px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.25);
+      padding: 14px;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      background: #cfd4da;
+      border: 2px solid #868c94;
+      border-radius: 3px;
+      padding: 18px 18px;
+      margin: 10px 0;
+      font-weight: 750;
+      font-size: clamp(30px, 4.2vw, 60px);
+      color: #2b2f36;
+      letter-spacing: 0.5px;
+    }
+    .line { justify-self: start; }
+    .time { justify-self: end; font-variant-numeric: tabular-nums; }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 14px;
+      color: #2b2f36;
+      opacity: .85;
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <div class="sign">
+      <div id="rows"></div>
+      <div class="meta">
+        <div id="stopName">Kungshamra</div>
+        <div id="updatedAt"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const SITE_ID = 3433;        // Kungshamra
+const MAX_ROWS = 4;
+const POLL_MS = 30000;
+
+function render(rows) {
+  const container = document.getElementById("rows");
+  container.innerHTML = "";
+
+  if (rows.length === 0) {
+    const el = document.createElement("div");
+    el.className = "row";
+    el.innerHTML = `<div class="line">No departures</div><div class="time"></div>`;
+    container.appendChild(el);
+    return;
+  }
+
+  for (const r of rows.slice(0, MAX_ROWS)) {
+    const el = document.createElement("div");
+    el.className = "row";
+    el.innerHTML = `<div class="line">${r.line}</div><div class="time">${r.display}</div>`;
+    container.appendChild(el);
+  }
+}
+
+async function fetchDepartures() {
+  const url = `https://transport.integration.sl.se/v1/sites/${SITE_ID}/departures`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+
+  const deps = Array.isArray(data?.departures) ? data.departures : [];
+
+  const rows = deps
+    .filter(d => d?.line?.transport_mode === "BUS")
+    .map(d => ({
+      line: d?.line?.designation ?? "?",
+      display: d?.display ?? ""
+    }))
+    .filter(r => r.display);
+
+  render(rows);
+
+  document.getElementById("updatedAt").textContent =
+    `Updated ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+}
+
+async function loop() {
+  try {
+    await fetchDepartures();
+  } catch (e) {
+    render([{ line: "Offline / error", display: "" }]);
+  }
+  setTimeout(loop, POLL_MS);
+}
+
+loop();
+</script>
+</body>
+</html>
