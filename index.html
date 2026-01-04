@@ -175,7 +175,7 @@
     .meta {
     flex: 0 0 auto;
     display: grid;
-    grid-template-columns: 1fr auto 1fr; /* left, center, right */
+    grid-template-columns: 1fr auto minmax(80px, auto); /* ensure min space for timestamp */
     align-items: center;
     margin-top: 10px;
     padding-top: 10px;
@@ -183,7 +183,7 @@
     font-size: 13px;
     color: var(--text-dim);
     letter-spacing: 0.4px;
-    gap: 12px;
+    gap: 8px; /* reduced gap to give more space */
     }
 
     #title {
@@ -241,7 +241,7 @@
       <div id="rows" class="rows"></div>
 
       <div class="meta">
-        <div id="title">Kungshamra (Buses)</div>
+        <div id="title">Kungshamra </div>
 
         <div class="nav">
           <button id="btnBus" class="active" type="button">Buses</button>
@@ -274,7 +274,7 @@ function setMode(next) {
   document.getElementById("btnBus").classList.toggle("active", mode === "BUS");
   document.getElementById("btnMetro").classList.toggle("active", mode === "METRO");
   document.getElementById("title").textContent =
-    mode === "BUS" ? "Kungshamra (Buses)" : "Bergshamra centrum (Metro)";
+    mode === "BUS" ? "Kungshamra (Buses)" : "Bergshamra centrum";
 
   tick();
 }
